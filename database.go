@@ -22,6 +22,9 @@ const UserInfo="userinfo"
 const HouseInfo="houseinfo"
 const HouseListInfo="houselistinfo"
 const ExpireHouse="expirehouse"
+const Wallet  = "wallet"
+const Discount="discount"
+const Order  = "order"
 
 const(
 	USERIDENTIFY=0
@@ -29,6 +32,9 @@ const(
 	HOUSEINFO=2
 	HOUSELISTINFO=3
 	EXPIREHOUSE=4
+	WALLET=5
+	DISCOUNT=6
+	ORDER=7
 )
 func initDB(){
 	log.SetOutput(os.Stdout)
@@ -52,5 +58,8 @@ func initDB(){
 	Collection[HOUSEINFO]=client.Database(ProjectName).Collection(HouseInfo)
 	Collection[HOUSELISTINFO]=client.Database(ProjectName).Collection(HouseListInfo)
 	Collection[EXPIREHOUSE]=client.Database(ProjectName).Collection(ExpireHouse)
+	Collection[WALLET]=client.Database(ProjectName).Collection(Wallet)
+	Collection[DISCOUNT]=client.Database(ProjectName).Collection(Discount)
+	Collection[ORDER]=client.Database(ProjectName).Collection(Order)
 
 }

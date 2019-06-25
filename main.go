@@ -22,6 +22,7 @@ func main(){
 	e.POST("/gethouselist",gethouselist)
 	e.POST("/gethouselist/:queryparam",gethouselist)
 	e.POST("/getmyputs",getMyPuts)
+	e.POST("/getdiscountlist",getDiscountList)
 	e.POST("/pay",pay)
 	e.Logger.Fatal(e.Start(":80"))
 }

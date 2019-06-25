@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/labstack/echo"
-	"github.com/shopspring/decimal"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -15,6 +14,7 @@ import (
 
 type GetHLStruct LoginSucc
 type HouseListItem struct {
+	UserID string `json:"user_id"`
 	HouseID string `json:"house_id"`
 	Time primitive.DateTime `json:"time"`
 	Price string `json:"price"`
@@ -71,7 +71,7 @@ func genHouseID()string{
 	return str
 }
 func genMiniDetail(detail HouseDetail)HouseListItem{
-	return HouseListItem{detail.HouseID, detail.Time,detail.Price,detail.Square,detail.Shiting,detail.Title,detail.Location,detail.Pictures[0]}
+	return HouseListItem{detail.UserID,detail.HouseID, detail.Time,detail.Price,detail.Square,detail.Shiting,detail.Title,detail.Location,detail.Pictures[0]}
 }
 func puthouse(c echo.Context)error{
 	requestbody:=new(HouseDetail)
