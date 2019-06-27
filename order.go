@@ -7,197 +7,266 @@ import (
 	"github.com/shopspring/decimal"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 	"strconv"
 	"time"
 )
 
-type PayOrder struct {
-	UserID string `json:"user_id"`
-	Token string `json:"token"`
-	HouseID string `json:"house_id"`
-	HostID string `json:"host_id"`
-	OrderID string `json:"order_id"`
-	DiscountID string `json:"discount_id"`
-	Pay Paychannel `json:"pay"`
-	Time primitive.DateTime `json:"time"`
+type PayOrderJ struct {
+	UserID     string      `json:"userid"`
+	Token      string      `json:"token"`
+	HouseID    string      `json:"houseid"`
+	HostID     string      `json:"hostid"`
+	OrderID    string      `json:"orderid"`
+	DiscountID string      `json:"discountid"`
+	Pay        PaychannelJ `json:"pay"`
+	Time       time.Time   `json:"time"`
 }
-type Paychannel struct {
-	AliPay decimal.Decimal `json:"ali_pay"`
-	WechatPay decimal.Decimal `json:"wechat_pay"`
-	Balance decimal.Decimal `json:"balance"`
+type PayOrderD struct {
+	UserID     string             `json:"userid"`
+	Token      string             `json:"token"`
+	HouseID    string             `json:"houseid"`
+	HostID     string             `json:"hostid"`
+	OrderID    string             `json:"orderid"`
+	DiscountID string             `json:"discountid"`
+	Pay        PaychannelD        `json:"pay"`
+	Time       primitive.DateTime `json:"time"`
+}
+type PaychannelJ struct {
+	AliPay    decimal.Decimal `json:"alipay"`
+	WechatPay decimal.Decimal `json:"wechatpay"`
+	Balance   decimal.Decimal `json:"balance"`
+}
+type PaychannelD struct {
+	AliPay    primitive.Decimal128 `json:"alipay"`
+	WechatPay primitive.Decimal128 `json:"wechatpay"`
+	Balance   primitive.Decimal128 `json:"balance"`
 }
 type PaySucc struct {
-	OrderID string `json:"order_id"`
+	OrderID   string `json:"orderid"`
 	Payresult string `json:"payresult"`
 }
-type Discountdetail struct{
-	UserID string `json:"user_id"`
-	DiscountID string `json:"discount_id"`
-	Recduce decimal.Decimal `json:"reduce"`
-	Type string `json:"type"`
-	Description string `json:"description"`
-	Useable int `json:"useable"`
+type DiscountdetailJ struct {
+	UserID      string          `json:"userid"`
+	DiscountID  string          `json:"discountid"`
+	Reduce      decimal.Decimal `json:"reduce"`
+	Type        string          `json:"type"`
+	Description string          `json:"description"`
+	Useable     int             `json:"useable"`
 }
-type WalletStruct struct {
-	UserID string `json:"user_id"`
-	Score int32 `json:"score"`
-	Balance decimal.Decimal `json:"balance"`
-	DiscountList []Discountdetail `json:"discount_list"`
-	PayOrderList []PayOrder `json:"pay_order_list"`
-
+type DiscountdetailD struct {
+	UserID      string               `json:"userid"`
+	DiscountID  string               `json:"discountid"`
+	Reduce      primitive.Decimal128 `json:"reduce"`
+	Type        string               `json:"type"`
+	Description string               `json:"description"`
+	Useable     int                  `json:"useable"`
+}
+type WalletStructJ struct {
+	UserID       string            `json:"userid"`
+	Score        int32             `json:"score"`
+	Balance      decimal.Decimal   `json:"balance"`
+	DiscountList []DiscountdetailJ `json:"discountlist"`
+	PayOrderList []PayOrderJ       `json:"payorderlist"`
+}
+type WalletStructD struct {
+	UserID       string               `json:"userid"`
+	Score        int32                `json:"score"`
+	Balance      primitive.Decimal128 `json:"balance"`
+	DiscountList []DiscountdetailD    `json:"discountlist"`
+	PayOrderList []PayOrderD          `json:"payorderlist"`
 }
 
 type GetPrePayInfo LoginSucc
-func genDiscountID()string{
-	str:= strconv.Itoa(int(time.Now().Unix()%8999999999)+1000000000)
-	filter:=bson.D{{"discount_id",str}}
-	var result  Discountdetail
-	err=Collection[DISCOUNT].FindOne(context.TODO(),filter).Decode(&result)
+
+func genDiscountID() string {
+	str := strconv.Itoa(int(time.Now().Unix()%8999999999) + 1000000000)
+	filter := bson.D{{"discountid", str}}
+	var result DiscountdetailD
+	err = Collection[DISCOUNT].FindOne(context.TODO(), filter).Decode(&result)
 	if err != nil {
 		fmt.Println(err)
-		return ""
+		if err != mongo.ErrNoDocuments {
+			return ""
+		}
 	}
-	if result.DiscountID==str{
+	if result.DiscountID == str {
 		return genDiscountID()
 	}
 	return str
 }
-func genOrderID()string{
-	str:= strconv.Itoa(int(time.Now().Unix()%8999999999)+1000000000)
-	filter:=bson.D{{"order_id",str}}
-	var result  PayOrder
-	err=Collection[ORDER].FindOne(context.TODO(),filter).Decode(&result)
+func genOrderID() string {
+	str := strconv.Itoa(int(time.Now().Unix()%8999999999) + 1000000000)
+	filter := bson.D{{"orderid", str}}
+	var result PayOrderD
+	err = Collection[ORDER].FindOne(context.TODO(), filter).Decode(&result)
 	if err != nil {
 		fmt.Println(err)
-		return ""
+		if err != mongo.ErrNoDocuments {
+			return ""
+		}
 	}
-	if result.OrderID==str{
+	if result.OrderID == str {
 		return genOrderID()
 	}
 	return str
 }
-func getDiscountList(c echo.Context)error{
-	requestbody:=new(GetPrePayInfo)
-	err:=c.Bind(requestbody)
+func getDiscountList(c echo.Context) error {
+	requestbody := new(GetPrePayInfo)
+	err := c.Bind(requestbody)
 	if err != nil {
 		fmt.Println(err)
-		return c.String(http.StatusOK,"Wrong Format")
+		return c.String(http.StatusOK, "Wrong Format")
 	}
-	if !checkToken(requestbody.UserID,requestbody.Token) {
-		return c.String(http.StatusOK,"Invalid Token")
+	if !checkToken(requestbody.UserID, requestbody.Token) {
+		return c.String(http.StatusOK, "Invalid Token")
 	}
-	filter:=bson.D{{"user_id",requestbody.UserID}}
-	var rec WalletStruct
-	err=Collection[WALLET].FindOne(context.TODO(),filter).Decode(rec)
+	filter := bson.D{{"userid", requestbody.UserID}}
+	var rec WalletStructD
+	err = Collection[WALLET].FindOne(context.TODO(), filter).Decode(&rec)
 	if err != nil {
 		fmt.Println(err)
-		return c.String(http.StatusOK,"Failed")
+		if err != mongo.ErrNoDocuments {
+			return c.String(http.StatusOK, "Failed")
+		}
 	}
-	if rec.UserID==""{
-		zero,_:=decimal.NewFromString("0")
-		newdisv,_:=decimal.NewFromString("100")
-		newdist:=Discountdetail{requestbody.UserID, genDiscountID(), newdisv, "-", "新用户优惠",1}
-		newuser:=WalletStruct{
+	if rec.UserID == "" {
+		zeroD, _ := primitive.ParseDecimal128("0")
+		newdisvD, _ := primitive.ParseDecimal128("100")
+		newdist := DiscountdetailD{
+			requestbody.UserID,
+			genDiscountID(),
+			newdisvD,
+			"-",
+			"新用户优惠",
+			1}
+		newuser := WalletStructD{
 			UserID:       requestbody.UserID,
 			Score:        0,
-			Balance:      zero,
-			DiscountList: []Discountdetail{newdist,},
+			Balance:      zeroD,
+			DiscountList: []DiscountdetailD{newdist,},
 		}
-		_,err:=Collection[WALLET].InsertOne(context.TODO(),newuser)
+		_, err := Collection[WALLET].InsertOne(context.TODO(), newuser)
 		if err != nil {
 			fmt.Println(err)
 		}
-		_,err=Collection[DISCOUNT].InsertOne(context.TODO(),newdist)
+		_, err = Collection[DISCOUNT].InsertOne(context.TODO(), newdist)
 		if err != nil {
 			fmt.Println(err)
 		}
-
-		return c.JSON(http.StatusOK,newuser.DiscountList)
+		resultJ := conv_WSD_J(newuser)
+		return c.JSON(http.StatusOK, resultJ.DiscountList)
 	}
-	return c.JSON(http.StatusOK,rec.DiscountList)
+	resultJ := conv_WSD_J(rec)
+	return c.JSON(http.StatusOK, resultJ.DiscountList)
 }
-func pay(c echo.Context)error{
+func pay(c echo.Context) error {
 	//TODO need lock?
-	requestbody:=new(PayOrder)
-	err:=c.Bind(requestbody)
+	requestbodyJ := new(PayOrderJ)
+	err := c.Bind(requestbodyJ)
 	if err != nil {
 		fmt.Println(err)
-		return c.String(http.StatusOK,"Wrong Format")
+		return c.String(http.StatusOK, "Wrong Format")
 	}
-	if !checkToken(requestbody.UserID,requestbody.Token) {
-		return c.String(http.StatusOK,"Invalid Token")
+	if !checkToken(requestbodyJ.UserID, requestbodyJ.Token) {
+		return c.String(http.StatusOK, "Invalid Token")
 	}
 	//check house
-	var house HouseDetail
-	filter:=bson.D{{"house_id",requestbody.HouseID}}
-	err=Collection[HOUSEINFO].FindOne(context.TODO(),filter).Decode(house)
+	var houseD HouseDetailD
+	filter := bson.D{{"houseid", requestbodyJ.HouseID}}
+	err = Collection[HOUSEINFO].FindOne(context.TODO(), filter).Decode(&houseD)
 	if err != nil {
 		fmt.Println(err)
-		return c.String(http.StatusOK,"Failed")
+		return c.String(http.StatusOK, "Failed")
 	}
-	if house.HouseID==""{
-		return c.String(http.StatusOK,"House Not Exist")
+	if houseD.HouseID == "" {
+		return c.String(http.StatusOK, "House Not Exist")
 	}
-	if house.UserID!=requestbody.HostID{
-		return c.String(http.StatusOK,"Wrong HostID")
+	if houseD.UserID != requestbodyJ.HostID {
+		return c.String(http.StatusOK, "Wrong HostID")
 	}
 	//check money
-	var wallet WalletStruct
-	filteru:=bson.D{{"user_id",requestbody.UserID}}
-	err=Collection[WALLET].FindOne(context.TODO(),filteru).Decode(wallet)
-	if wallet.UserID==""{
-		return c.String(http.StatusOK,"Failed2")
+	var walletD WalletStructD
+	filteru := bson.D{{"userid", requestbodyJ.UserID}}
+	err = Collection[WALLET].FindOne(context.TODO(), filteru).Decode(&walletD)
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusOK, "Failed3")
 	}
-	if wallet.Balance.LessThan(requestbody.Pay.Balance){
-		return c.String(http.StatusOK,"Lacking Balance")
+	if walletD.UserID == "" {
+		return c.String(http.StatusOK, "Failed2")
 	}
-	var useable=false
-	var loc=0
-	for index,disc:=range wallet.DiscountList{ //check discount
-		if disc.DiscountID==requestbody.DiscountID{
-			loc=index
-			useable=true
-			if disc.Useable==0{
-				return c.String(http.StatusOK,"Discount Unuseable")
+	if conv_priDe_dD(walletD.Balance).LessThan(requestbodyJ.Pay.Balance) {
+		return c.String(http.StatusOK, "Lacking Balance")
+	}
+	var useable = false
+	var loc = 0
+	for index, disc := range walletD.DiscountList { //check discount
+		if disc.DiscountID == requestbodyJ.DiscountID {
+			loc = index
+			useable = true
+			if disc.Useable == 0 {
+				return c.String(http.StatusOK, "Discount Unuseable")
 			}
 		}
 	}
-	if !(requestbody.DiscountID=="" || useable){
-		return c.String(http.StatusOK,"Discount Unuseable")
+	if !(requestbodyJ.DiscountID == "" || useable) {
+		return c.String(http.StatusOK, "Discount Unuseable")
 	}
-	paysum:=decimal.Sum(requestbody.Pay.AliPay,requestbody.Pay.WechatPay,requestbody.Pay.Balance)
-	price,_:=decimal.NewFromString(house.Price)
-	if paysum.LessThan(price){
-		return c.String(http.StatusOK,"Pay Not Enough")
+	dismoney:=conv_priDe_dD(walletD.DiscountList[loc].Reduce)
+	paysum := decimal.Sum(requestbodyJ.Pay.AliPay, requestbodyJ.Pay.WechatPay, requestbodyJ.Pay.Balance,dismoney)
+	price := conv_priDe_dD(houseD.Price)
+	if paysum.LessThan(price) {
+		return c.String(http.StatusOK, "Pay Not Enough")
 	}
 	//pay
-	_,err=Collection[HOUSEINFO].DeleteOne(context.TODO(),filter)
+	_, err = Collection[HOUSEINFO].DeleteOne(context.TODO(), filter)
 	if err != nil {
 		fmt.Println(err)
 	}
-	_,err=Collection[HOUSELISTINFO].DeleteOne(context.TODO(),filter)
+	_, err = Collection[HOUSELISTINFO].DeleteOne(context.TODO(), filter)
 	if err != nil {
 		fmt.Println(err)
 	}
 	if useable {
-		_, err = Collection[DISCOUNT].DeleteOne(context.TODO(), bson.D{{"disount_id", requestbody.DiscountID}})
+		_, err = Collection[DISCOUNT].DeleteOne(context.TODO(), bson.D{{"disountid", requestbodyJ.DiscountID}})
 		if err != nil {
 			fmt.Println(err)
 		}
 
-		wallet.DiscountList[loc].Useable=0
+		walletD.DiscountList[loc].Useable = 0
 	}
-	requestbody.Token=""
-	requestbody.Time=primitive.DateTime(time.Now().Unix())
-	requestbody.OrderID=genOrderID()
-	wallet.PayOrderList=append(wallet.PayOrderList, *requestbody)
-	wallet.Balance=wallet.Balance.Sub(requestbody.Pay.Balance)
+	requestbodyJ.Token = ""
+	requestbodyJ.Time = time.Now()
+	requestbodyJ.OrderID = genOrderID()
+	requestbodyD := conv_POJ_D(*requestbodyJ)
+	walletD.PayOrderList = append(walletD.PayOrderList, requestbodyD)
+	walletD.Balance = conv_dD_priDe(conv_priDe_dD(walletD.Balance).Sub(requestbodyJ.Pay.Balance))
 
-	_,err=Collection[WALLET].ReplaceOne(context.TODO(),filteru,wallet)
+	_, err = Collection[WALLET].ReplaceOne(context.TODO(), filteru, walletD)
 	if err != nil {
 		fmt.Println(err)
 	}
-	result:=PaySucc{requestbody.OrderID,"Success"}
-	return c.JSON(http.StatusOK,result)
+	result := PaySucc{requestbodyJ.OrderID, "Success"}
+	return c.JSON(http.StatusOK, result)
+}
+func getmyrented(c echo.Context) error {
+	userm := new(GetPrePayInfo)
+	err := c.Bind(userm)
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusOK, "Wrong Format")
+	}
+	if !checkToken(userm.UserID, userm.Token) {
+		return c.String(http.StatusOK, "Invalid Token")
+	}
+	filter := bson.D{{"userid", userm.UserID}}
+	var walletD WalletStructD
+	err = Collection[WALLET].FindOne(context.TODO(), filter).Decode(&walletD)
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusOK, "err 01")
+	}
+	return c.JSON(http.StatusOK, conv_list_POD_J(walletD.PayOrderList))
 }
