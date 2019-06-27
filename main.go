@@ -1,14 +1,26 @@
 package main
 
 import (
+	"github.com/go-ego/riot"
+	"github.com/go-ego/riot/types"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 )
 
-var e = echo.New()
+
+var(
+	e = echo.New()
+	searcher=riot.Engine{}
+)
 
 func main() {
 	initDB()
+	searcher.Init(types.EngineOpts{
+		Using:3,
+		GseDict:"zh",
+	})
+	defer searcher.Close()
+
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())

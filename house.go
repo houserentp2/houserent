@@ -164,10 +164,10 @@ func gethouselist(c echo.Context) error {
 	}
 	queryParam := c.Param("queryparam")
 	nowtime := conv_tT_priDT(time.Now().AddDate(0,-1,0))
-	fmt.Println(nowtime)
-	money,_:=primitive.ParseDecimal128("20")
+	//fmt.Println(nowtime)
+	//money,_:=primitive.ParseDecimal128("20")
 	if queryParam == "" {
-		curser, err := Collection[HOUSEINFO].Find(context.TODO(), bson.M{"price": bson.M{"gte": money}}, options.Find().SetLimit(10), options.Find().SetSort(bson.M{"price": -1}))
+		curser, err := Collection[HOUSELISTINFO].Find(context.TODO(), bson.M{"time": bson.M{"$gte": nowtime}}, options.Find().SetLimit(10), options.Find().SetSort(bson.M{"price": -1}))
 		if err != nil {
 			fmt.Println(err)
 			return c.String(http.StatusOK, "Failed")
@@ -216,6 +216,8 @@ func getMyPuts(c echo.Context) error {
 		}
 		resultD = append(resultD, *item)
 	}
+	fmt.Println(resultD[0].Picture)
+	fmt.Println(resultD[1].Picture)
 	var resultJ []HouseListItemJ
 	for _, item := range resultD {
 		resultJ = append(resultJ, conv_HouseListItemD_J(item))
