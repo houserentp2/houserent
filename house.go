@@ -25,6 +25,7 @@ type HouseListItemD struct {
 	Title    string               `json:"title"`
 	Location Resident             `json:"location"`
 	Picture  string               `json:"picture"`
+	Others      OtherHouseDetail     `json:"others"`
 }
 type HouseListItemJ struct {
 	UserID   string          `json:"userid"`
@@ -36,18 +37,29 @@ type HouseListItemJ struct {
 	Title    string          `json:"title"`
 	Location Resident        `json:"location"`
 	Picture  string          `json:"picture"`
+	Others      OtherHouseDetail     `json:"others"`
 }
 type Shiting struct {
 	Shi  int32 `json:"shi"`
 	Ting int32 `json:"ting"`
 }
 type OtherHouseDetail struct {
-	Water  string `json:"water"`
-	Power  string `json:"power"`
-	Net    string `json:"net"`
-	Hot    string `json:"hot"`
-	Aircon string `json:"aircon"`
-	Bus    string `json:"bus"`
+	Water    string   `json:"water"`
+	Power    string   `json:"power"`
+	Net      string   `json:"net"`
+	Hot      string   `json:"hot"`
+	Aircon   string   `json:"aircon"`
+	Bus      string   `json:"bus"`
+	Short    int      `json:"short"`
+	Long     int      `json:"long"`
+	Capacity int32    `json:"capacity"`
+	Comments []string `json:"comments"`
+	Status   Status `json:"status"`
+}
+type Status struct {
+	Tolive   int    `json:"tolive"`
+	Living   int      `json:"living"`
+	Lived   int `json:"lived"`
 }
 type GetHouseIDStruct struct {
 	UserID  string `json:"userid"`
@@ -100,10 +112,10 @@ func genHouseID() string {
 	return str
 }
 func genMiniDetailD(detail HouseDetailD) HouseListItemD {
-	return HouseListItemD{detail.UserID, detail.HouseID, detail.Time, detail.Price, detail.Square, detail.Shiting, detail.Title, detail.Location, detail.Pictures[0]}
+	return HouseListItemD{detail.UserID, detail.HouseID, detail.Time, detail.Price, detail.Square, detail.Shiting, detail.Title, detail.Location, detail.Pictures[0],detail.Others}
 }
 func genMiniDetailJ(detail HouseDetailJ) HouseListItemJ {
-	return HouseListItemJ{detail.UserID, detail.HouseID, detail.Time, detail.Price, detail.Square, detail.Shiting, detail.Title, detail.Location, detail.Pictures[0]}
+	return HouseListItemJ{detail.UserID, detail.HouseID, detail.Time, detail.Price, detail.Square, detail.Shiting, detail.Title, detail.Location, detail.Pictures[0],detail.Others}
 }
 func puthouse(c echo.Context) error {
 	requestbody := new(HouseDetailJ)
@@ -117,6 +129,7 @@ func puthouse(c echo.Context) error {
 	}
 	requestbody.HouseID = genHouseID()
 	requestbody.Token = ""
+	requestbody.Time = time.Now()
 	requestbodyD := conv_HouseDetailJ_D(*requestbody)
 	insertRes, err := Collection[HOUSEINFO].InsertOne(context.TODO(), requestbodyD)
 	if err != nil {
@@ -131,6 +144,36 @@ func puthouse(c echo.Context) error {
 	}
 	fmt.Println(insertRes.InsertedID)
 	return c.String(http.StatusOK, requestbody.HouseID)
+}
+func updatehouse(c echo.Context) error {
+	requestbody := new(HouseDetailJ)
+	err := c.Bind(requestbody)
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusOK, "Wrong Format")
+	}
+	if !checkToken(requestbody.UserID, requestbody.Token) {
+		return c.String(http.StatusOK, "Invalid Token")
+	}
+	if requestbody.HouseID == "" {
+		return c.String(http.StatusOK, "Lack HouseID")
+	}
+	filter := bson.D{{"houseid", requestbody.HouseID}}
+	data := new(HouseDetailD)
+	err = Collection[HOUSEINFO].FindOne(context.TODO(), filter).Decode(data)
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusOK, "ERR 01")
+	}
+	requestbody.Token = ""
+	requestbody.Time = time.Now()
+	requestdata := conv_HouseDetailJ_D(*requestbody)
+	listreq := genMiniDetailD(requestdata)
+	dbres := Collection[HOUSEINFO].FindOneAndReplace(context.TODO(), filter, requestdata)
+	fmt.Println(dbres)
+	dbres = Collection[HOUSELISTINFO].FindOneAndReplace(context.TODO(), filter, listreq)
+	fmt.Println(dbres)
+	return c.JSON(http.StatusOK, requestbody)
 }
 func gethouse(c echo.Context) error {
 	requestbody := new(GetHouseIDStruct)
@@ -163,7 +206,7 @@ func gethouselist(c echo.Context) error {
 		return c.String(http.StatusOK, "Invalid Token")
 	}
 	queryParam := c.Param("queryparam")
-	nowtime := conv_tT_priDT(time.Now().AddDate(0,-1,0))
+	nowtime := conv_tT_priDT(time.Now().AddDate(0, -1, 0))
 	//fmt.Println(nowtime)
 	//money,_:=primitive.ParseDecimal128("20")
 	if queryParam == "" {
@@ -188,7 +231,7 @@ func gethouselist(c echo.Context) error {
 		}
 		return c.JSON(http.StatusOK, resultJ)
 	}
-	return c.String(http.StatusOK,"aaa")
+	return c.String(http.StatusOK, "aaa")
 }
 func getMyPuts(c echo.Context) error {
 	requestbody := new(GetHLStruct)

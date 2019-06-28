@@ -70,6 +70,7 @@ func conv_HouseListItemD_J(hld HouseListItemD) HouseListItemJ {
 		hld.Title,
 		hld.Location,
 		hld.Picture,
+		hld.Others,
 	}
 }
 func conv_PcJ_D(j PaychannelJ) PaychannelD {
