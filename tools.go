@@ -31,6 +31,8 @@ func conv_HouseDetailJ_D(hj HouseDetailJ) HouseDetailD {
 	return HouseDetailD{
 		hj.UserID,
 		hj.Token,
+		hj.HostID,
+		hj.Icon,
 		hj.HouseID,
 		conv_tT_priDT(hj.Time),
 		conv_dD_priDe(hj.Price),
@@ -47,6 +49,8 @@ func conv_HouseDetailD_J(hd HouseDetailD) HouseDetailJ {
 	return HouseDetailJ{
 		hd.UserID,
 		hd.Token,
+		hd.HostID,
+		hd.Icon,
 		hd.HouseID,
 		conv_priDT_tT(hd.Time),
 		conv_priDe_dD(hd.Price),
@@ -62,6 +66,8 @@ func conv_HouseDetailD_J(hd HouseDetailD) HouseDetailJ {
 func conv_HouseListItemD_J(hld HouseListItemD) HouseListItemJ {
 	return HouseListItemJ{
 		hld.UserID,
+		hld.HostID,
+		hld.Icon,
 		hld.HouseID,
 		conv_priDT_tT(hld.Time),
 		conv_priDe_dD(hld.Price),
@@ -97,6 +103,9 @@ func conv_POJ_D(j PayOrderJ) PayOrderD {
 		j.DiscountID,
 		conv_PcJ_D(j.Pay),
 		conv_tT_priDT(j.Time),
+		conv_tT_priDT(j.Start),
+		conv_tT_priDT(j.Stop),
+		j.Result,
 	}
 }
 func conv_POD_J(d PayOrderD) PayOrderJ {
@@ -109,6 +118,9 @@ func conv_POD_J(d PayOrderD) PayOrderJ {
 		d.DiscountID,
 		conv_PcD_J(d.Pay),
 		conv_priDT_tT(d.Time),
+		conv_priDT_tT(d.Start),
+		conv_priDT_tT(d.Stop),
+		d.Result,
 	}
 }
 func conv_DcdJ_D(j DiscountdetailJ) DiscountdetailD {
@@ -118,6 +130,7 @@ func conv_DcdJ_D(j DiscountdetailJ) DiscountdetailD {
 		conv_dD_priDe(j.Reduce),
 		j.Type,
 		j.Description,
+		conv_tT_priDT(j.Outdate),
 		j.Useable,
 	}
 }
@@ -128,6 +141,7 @@ func conv_DcdD_J(d DiscountdetailD) DiscountdetailJ {
 		conv_priDe_dD(d.Reduce),
 		d.Type,
 		d.Description,
+		conv_priDT_tT(d.Outdate),
 		d.Useable,
 	}
 }

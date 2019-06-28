@@ -17,6 +17,8 @@ import (
 type GetHLStruct LoginSucc
 type HouseListItemD struct {
 	UserID   string               `json:"userid"`
+	HostID   string `json:"hostid"`
+	Icon     string  `json:"icon"`
 	HouseID  string               `json:"houseid"`
 	Time     primitive.DateTime   `json:"time"`
 	Price    primitive.Decimal128 `json:"price"`
@@ -29,6 +31,8 @@ type HouseListItemD struct {
 }
 type HouseListItemJ struct {
 	UserID   string          `json:"userid"`
+	HostID   string `json:"hostid"`
+	Icon     string  `json:"icon"`
 	HouseID  string          `json:"houseid"`
 	Time     time.Time       `json:"time"`
 	Price    decimal.Decimal `json:"price"`
@@ -69,6 +73,8 @@ type GetHouseIDStruct struct {
 type HouseDetailD struct {
 	UserID      string               `json:"userid"`
 	Token       string               `json:"token"`
+	HostID   string `json:"hostid"`
+	Icon     string  `json:"icon"`
 	HouseID     string               `json:"houseid"`
 	Time        primitive.DateTime   `json:"time"`
 	Price       primitive.Decimal128 `json:"price"`
@@ -83,6 +89,8 @@ type HouseDetailD struct {
 type HouseDetailJ struct {
 	UserID      string           `json:"userid"`
 	Token       string           `json:"token"`
+	HostID   string `json:"hostid"`
+	Icon     string  `json:"icon"`
 	HouseID     string           `json:"houseid"`
 	Time        time.Time        `json:"time"`
 	Price       decimal.Decimal  `json:"price"`
@@ -112,10 +120,10 @@ func genHouseID() string {
 	return str
 }
 func genMiniDetailD(detail HouseDetailD) HouseListItemD {
-	return HouseListItemD{detail.UserID, detail.HouseID, detail.Time, detail.Price, detail.Square, detail.Shiting, detail.Title, detail.Location, detail.Pictures[0],detail.Others}
+	return HouseListItemD{detail.UserID, detail.HostID,detail.Icon,detail.HouseID, detail.Time, detail.Price, detail.Square, detail.Shiting, detail.Title, detail.Location, detail.Pictures[0],detail.Others}
 }
 func genMiniDetailJ(detail HouseDetailJ) HouseListItemJ {
-	return HouseListItemJ{detail.UserID, detail.HouseID, detail.Time, detail.Price, detail.Square, detail.Shiting, detail.Title, detail.Location, detail.Pictures[0],detail.Others}
+	return HouseListItemJ{detail.UserID, detail.HostID,detail.Icon,detail.HouseID, detail.Time, detail.Price, detail.Square, detail.Shiting, detail.Title, detail.Location, detail.Pictures[0],detail.Others}
 }
 func puthouse(c echo.Context) error {
 	requestbody := new(HouseDetailJ)
@@ -173,7 +181,7 @@ func updatehouse(c echo.Context) error {
 	fmt.Println(dbres)
 	dbres = Collection[HOUSELISTINFO].FindOneAndReplace(context.TODO(), filter, listreq)
 	fmt.Println(dbres)
-	return c.JSON(http.StatusOK, requestbody)
+	return c.String(http.StatusOK, requestbody.HouseID)
 }
 func gethouse(c echo.Context) error {
 	requestbody := new(GetHouseIDStruct)

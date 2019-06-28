@@ -110,6 +110,8 @@ method:POST
 {
 	"userid":"41539402",
 	"token": "5b8ca602e47bc068371f505f92eb23f9",
+	"hostid": "67432823",
+    "icon": "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgOTg5LjI4",
 	"houseid":"",
 	"time":"2019-06-26T21:56:02.455+08:00",
 	"price":"23.3",
@@ -134,17 +136,21 @@ method:POST
 		"hot":"self",
 		"aircon":"1",
 		"bus":"300",
+		"short": 1,
+        "long": 1,
 		"capacity": 3,
 		"comments": ["daodskfnsu","ufhsduibdshcj"],
 		"status": {
-		"tolive": "0",
-		"living": "0",
-		"lived": "0"
+		"tolive": 0,
+		"living": 0,
+		"lived": 0
 		}
 	}
 }
 ```
 response:2561561080
+## /updatehouse
+与puthouse相同
 ## /gethouse  
 method:POST  
 requestbody:  
@@ -160,6 +166,8 @@ response:
 {
     "userid": "41539402",
     "token": "",
+    "hostid": "67432823",
+    "icon": "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgOTg5LjI4",
     "houseid": "2561561080",
     "time": "2019-06-26T21:56:02+08:00",
     "price": "23.3",
@@ -188,12 +196,14 @@ response:
         "hot": "self",
         "aircon": "1",
         "bus": "300",
+        "short": 1,
+        "long": 1,
         "capacity": 3,
         "comments": ["daodskfnsu","ufhsduibdshcj"],
         "status": {
-        	"tolive": "0",
-        	"living": "0",
-        	"lived": "0"
+        	"tolive": 0,
+        	"living": 0,
+        	"lived": 0
     }
     }
 }
@@ -212,6 +222,8 @@ requestbody:
 [
     {
         "userid": "41539402",
+        "hostid": "67432823",
+        "icon": "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgOTg5LjI4",
         "houseid": "2561598185",
         "time": "2019-06-27T08:56:02+08:00",
         "price": "23.3",
@@ -235,17 +247,21 @@ requestbody:
                 "hot": "self",
                 "aircon": "1",
                 "bus": "300",
+                "short": 1,
+                "long": 1,
                 "capacity": 3,
                 "comments": ["daodskfnsu","ufhsduibdshcj"],
                 "status": {
-                	"tolive": "0",
-                	"living": "0",
-                	"lived": "0"
+                	"tolive": 0,
+                	"living": 0,
+                	"lived": 0
             }
         }
     },
     {
         "userid": "41539402",
+        "hostid": "67432823",
+        "icon": "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgOTg5LjI4",
         "houseid": "2561603612",
         "time": "2019-06-27T09:56:02+08:00",
         "price": "23.3",
@@ -269,12 +285,14 @@ requestbody:
                         "hot": "self",
                         "aircon": "1",
                         "bus": "300",
+                        "short": 1,
+                        "long": 1,
                         "capacity": 3,
                         "comments": ["daodskfnsu","ufhsduibdshcj"],
                         "status": {
-                        	"tolive": "0",
-                        	"living": "0",
-                        	"lived": "0"
+                        	"tolive": 0,
+                        	"living": 0,
+                        	"lived": 0
                         }
                 }
     }
@@ -302,6 +320,8 @@ POST
 [
     {
         "userid": "41539402",
+        "hostid": "67432823",
+        "icon": "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgOTg5LjI4",
         "houseid": "2561561080",
         "time": "2019-06-26T21:56:02+08:00",
         "price": "23.3",
@@ -325,12 +345,14 @@ POST
                                 "hot": "self",
                                 "aircon": "1",
                                 "bus": "300",
+                                "short": 1,
+                                "long": 1,
                                 "capacity": 3,
                                 "comments": ["daodskfnsu","ufhsduibdshcj"],
                                 "status": {
-                                	"tolive": "0",
-                                	"living": "0",
-                                	"lived": "0"
+                                	"tolive": 0,
+                                	"living": 0,
+                                	"lived": 0
                                 }
                         }
     }
@@ -358,7 +380,10 @@ POST
             "wechatpay": "0",
             "balance": "0"
         },
-        "time": "2019-06-26T23:43:42+08:00"
+        "time": "2019-06-26T23:43:42+08:00",
+        "start": "2019-06-29T23:43:42+08:00",
+        "stop": "2019-07-26T23:43:42+08:00",
+        "result": 1
     }
 ]
 ```
@@ -378,6 +403,7 @@ POST
         "reduce": "100",
         "type": "-",
         "description": "新用户优惠",
+        "outdate": "2029-07-26T23:43:42+08:00",
         "useable": 1
     }
 ]
@@ -397,7 +423,10 @@ POST
 		"wechatpay":"0",
 		"balance":"0"
 	},
-	"time":"2019-06-26T21:56:02+08:00"
+	"time":"2019-06-26T21:56:02+08:00",
+	"start": "2019-06-29T23:43:42+08:00",
+    "stop": "2019-07-26T23:43:42+08:00",
+    "result": 1
 }
 ```
 ```json

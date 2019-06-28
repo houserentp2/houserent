@@ -22,6 +22,9 @@ type PayOrderJ struct {
 	DiscountID string      `json:"discountid"`
 	Pay        PaychannelJ `json:"pay"`
 	Time       time.Time   `json:"time"`
+	Start      time.Time   `json:"start"`
+	Stop       time.Time   `json:"stop"`
+	Result     int         `json:"result"`
 }
 type PayOrderD struct {
 	UserID     string             `json:"userid"`
@@ -32,6 +35,9 @@ type PayOrderD struct {
 	DiscountID string             `json:"discountid"`
 	Pay        PaychannelD        `json:"pay"`
 	Time       primitive.DateTime `json:"time"`
+	Start      primitive.DateTime `json:"start"`
+	Stop       primitive.DateTime `json:"stop"`
+	Result     int                `json:"result"`
 }
 type PaychannelJ struct {
 	AliPay    decimal.Decimal `json:"alipay"`
@@ -53,6 +59,7 @@ type DiscountdetailJ struct {
 	Reduce      decimal.Decimal `json:"reduce"`
 	Type        string          `json:"type"`
 	Description string          `json:"description"`
+	Outdate     time.Time       `json:"outdate"`
 	Useable     int             `json:"useable"`
 }
 type DiscountdetailD struct {
@@ -61,6 +68,7 @@ type DiscountdetailD struct {
 	Reduce      primitive.Decimal128 `json:"reduce"`
 	Type        string               `json:"type"`
 	Description string               `json:"description"`
+	Outdate     primitive.DateTime   `json:"outdate"`
 	Useable     int                  `json:"useable"`
 }
 type WalletStructJ struct {
@@ -134,12 +142,14 @@ func getDiscountList(c echo.Context) error {
 	if rec.UserID == "" {
 		zeroD, _ := primitive.ParseDecimal128("0")
 		newdisvD, _ := primitive.ParseDecimal128("100")
+		outdatetime := primitive.DateTime(time.Now().UnixNano()/1000000 + 1e12)
 		newdist := DiscountdetailD{
 			requestbody.UserID,
 			genDiscountID(),
 			newdisvD,
 			"-",
 			"新用户优惠",
+			outdatetime,
 			1}
 		newuser := WalletStructD{
 			UserID:       requestbody.UserID,
@@ -172,6 +182,7 @@ func pay(c echo.Context) error {
 	if !checkToken(requestbodyJ.UserID, requestbodyJ.Token) {
 		return c.String(http.StatusOK, "Invalid Token")
 	}
+
 	//check house
 	var houseD HouseDetailD
 	filter := bson.D{{"houseid", requestbodyJ.HouseID}}
@@ -194,6 +205,27 @@ func pay(c echo.Context) error {
 		fmt.Println(err)
 		return c.String(http.StatusOK, "Failed3")
 	}
+	requestbodyJ.Token = ""
+	requestbodyJ.Result=0
+	requestbodyJ.Time = time.Now()
+	//requestbodyJ.OrderID = genOrderID()
+	requestbodyD := conv_POJ_D(*requestbodyJ)
+	orderindex:=-1
+	if(requestbodyD.OrderID!=""){
+		for index,val:=range walletD.PayOrderList{
+			if val.OrderID==requestbodyD.OrderID{
+				orderindex=index
+				if val.Result==1 {
+					return c.String(http.StatusOK,"Order has been Paied")
+				}
+			}
+		}
+		if orderindex==-1{
+			return c.String(http.StatusOK,"Invalid Order")
+		}
+	}else {
+		requestbodyD.OrderID=genOrderID()
+	}
 	if walletD.UserID == "" {
 		return c.String(http.StatusOK, "Failed2")
 	}
@@ -214,8 +246,8 @@ func pay(c echo.Context) error {
 	if !(requestbodyJ.DiscountID == "" || useable) {
 		return c.String(http.StatusOK, "Discount Unuseable")
 	}
-	dismoney:=conv_priDe_dD(walletD.DiscountList[loc].Reduce)
-	paysum := decimal.Sum(requestbodyJ.Pay.AliPay, requestbodyJ.Pay.WechatPay, requestbodyJ.Pay.Balance,dismoney)
+	dismoney := conv_priDe_dD(walletD.DiscountList[loc].Reduce)
+	paysum := decimal.Sum(requestbodyJ.Pay.AliPay, requestbodyJ.Pay.WechatPay, requestbodyJ.Pay.Balance, dismoney)
 	price := conv_priDe_dD(houseD.Price)
 	if paysum.LessThan(price) {
 		return c.String(http.StatusOK, "Pay Not Enough")
@@ -237,11 +269,12 @@ func pay(c echo.Context) error {
 
 		walletD.DiscountList[loc].Useable = 0
 	}
-	requestbodyJ.Token = ""
-	requestbodyJ.Time = time.Now()
-	requestbodyJ.OrderID = genOrderID()
-	requestbodyD := conv_POJ_D(*requestbodyJ)
-	walletD.PayOrderList = append(walletD.PayOrderList, requestbodyD)
+	requestbodyD.Result=1
+	if orderindex==-1 {
+		walletD.PayOrderList = append(walletD.PayOrderList, requestbodyD)
+	}else {
+		walletD.PayOrderList[orderindex]=requestbodyD
+	}
 	walletD.Balance = conv_dD_priDe(conv_priDe_dD(walletD.Balance).Sub(requestbodyJ.Pay.Balance))
 
 	_, err = Collection[WALLET].ReplaceOne(context.TODO(), filteru, walletD)

@@ -1,9 +1,6 @@
 package main
 
 import (
-	"flag"
-	"github.com/go-ego/riot"
-	"github.com/go-ego/riot/types"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 )
@@ -14,6 +11,7 @@ const(
 )
 var(
 	e = echo.New()
+	/*
 	searcher=riot.Engine{}
 	wbs=map[string]HouseDetailD{}
 	//weiboData=flag.String()
@@ -22,17 +20,19 @@ var(
 	stopTokenFile = flag.String("stop_token_file",
 		"X:/Users/huang/go/pkg/mod/github.com/go-ego/riot@v0.0.0-20190307162011-3d971d90bc83/data/dict/stop_tokens.txt", "停用词文件")
 	staticFolder = flag.String("static_folder", "static", "静态文件目录")
+	*/
 )
 
 func main() {
 	initDB()
+	/*
 	searcher.Init(types.EngineOpts{
 		Using:1,
 		GseDict:*dictFile,
 		StopTokenFile:"X:/Users/huang/go/pkg/mod/github.com/go-ego/riot@v0.0.0-20190307162011-3d971d90bc83/data/dict/stop_tokens.txt",
 	})
 	defer searcher.Close()
-
+	*/
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())

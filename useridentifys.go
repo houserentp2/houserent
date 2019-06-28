@@ -47,6 +47,7 @@ type RegSucc struct {
 type UserDetInfo struct {
 	UserID   string   `json:"userid"`
 	Token    string   `json:"token"`
+	Icon     string   `json:"icon"`
 	Nickname string   `json:"nickname"`
 	ID       string   `json:"id"`
 	Resident Resident `json:"resident"`
