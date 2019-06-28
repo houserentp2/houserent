@@ -5,9 +5,6 @@
       <change beforePath="$PROJECT_DIR$/api_v0.2.md" beforeDir="false" afterPath="$PROJECT_DIR$/api_v0.2.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/house.go" beforeDir="false" afterPath="$PROJECT_DIR$/house.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order.go" beforeDir="false" afterPath="$PROJECT_DIR$/order.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools.go" beforeDir="false" afterPath="$PROJECT_DIR$/tools.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/useridentifys.go" beforeDir="false" afterPath="$PROJECT_DIR$/useridentifys.go" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -16,14 +13,14 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.5498927">
+    <splitter split-orientation="horizontal" split-proportion="0.5">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="375">
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/main.go">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="690">
-                  <caret line="48" column="32" selection-start-line="48" selection-start-column="32" selection-end-line="48" selection-end-column="32" />
+                <state relative-caret-position="534">
+                  <caret line="48" column="36" selection-start-line="48" selection-start-column="36" selection-end-line="48" selection-end-column="36" />
                   <folding>
                     <element signature="e#14#91#0" expanded="true" />
                   </folding>
@@ -65,8 +62,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/house.go">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="709">
-                  <caret line="202" column="41" lean-forward="true" selection-start-line="202" selection-start-column="41" selection-end-line="202" selection-end-column="41" />
+                <state relative-caret-position="776">
+                  <caret line="303" column="56" lean-forward="true" selection-start-line="303" selection-start-column="37" selection-end-line="303" selection-end-column="56" />
                   <folding>
                     <element signature="e#14#85#0" expanded="true" />
                   </folding>
@@ -120,8 +117,8 @@
             <entry file="file://$PROJECT_DIR$/api_v0.2.md">
               <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
                 <state split_layout="FIRST">
-                  <first_editor relative-caret-position="165">
-                    <caret line="152" column="11" lean-forward="true" selection-start-line="152" selection-start-column="11" selection-end-line="152" selection-end-column="11" />
+                  <first_editor relative-caret-position="653">
+                    <caret line="448" lean-forward="true" selection-start-line="448" selection-end-line="448" />
                   </first_editor>
                   <second_editor />
                 </state>
@@ -155,9 +152,10 @@
       <find>time.</find>
       <find>liv</find>
       <find>bus</find>
-      <find>getmy</find>
       <find>pay</find>
       <find>update</find>
+      <find>put</find>
+      <find>getmy</find>
     </findStrings>
   </component>
   <component name="GOROOT" path="X:\Go" />
@@ -175,11 +173,11 @@
         <option value="$PROJECT_DIR$/search.go" />
         <option value="$PROJECT_DIR$/database.go" />
         <option value="$PROJECT_DIR$/useridentifys.go" />
-        <option value="$PROJECT_DIR$/main.go" />
         <option value="$PROJECT_DIR$/tools.go" />
         <option value="$PROJECT_DIR$/order.go" />
-        <option value="$PROJECT_DIR$/api_v0.2.md" />
+        <option value="$PROJECT_DIR$/main.go" />
         <option value="$PROJECT_DIR$/house.go" />
+        <option value="$PROJECT_DIR$/api_v0.2.md" />
       </list>
     </option>
   </component>
@@ -439,13 +437,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/search.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="52">
-          <caret line="2" selection-start-line="2" selection-end-line="2" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../../pkg/mod/github.com/go-ego/riot@v0.0.0-20190307162011-3d971d90bc83/logo/44px.svg">
       <provider selected="true" editor-type-id="images" />
     </entry>
@@ -499,10 +490,27 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/main.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="690">
-          <caret line="48" column="32" selection-start-line="48" selection-start-column="32" selection-end-line="48" selection-end-column="32" />
+        <state relative-caret-position="534">
+          <caret line="48" column="36" selection-start-line="48" selection-start-column="36" selection-end-line="48" selection-end-column="36" />
           <folding>
             <element signature="e#14#91#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/search.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="52">
+          <caret line="2" selection-start-line="2" selection-end-line="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/house.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="776">
+          <caret line="303" column="56" lean-forward="true" selection-start-line="303" selection-start-column="37" selection-end-line="303" selection-end-column="56" />
+          <folding>
+            <element signature="e#14#85#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -510,20 +518,10 @@
     <entry file="file://$PROJECT_DIR$/api_v0.2.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="FIRST">
-          <first_editor relative-caret-position="165">
-            <caret line="152" column="11" lean-forward="true" selection-start-line="152" selection-start-column="11" selection-end-line="152" selection-end-column="11" />
+          <first_editor relative-caret-position="653">
+            <caret line="448" lean-forward="true" selection-start-line="448" selection-end-line="448" />
           </first_editor>
           <second_editor />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/house.go">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="709">
-          <caret line="202" column="41" lean-forward="true" selection-start-line="202" selection-start-column="41" selection-end-line="202" selection-end-column="41" />
-          <folding>
-            <element signature="e#14#85#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>

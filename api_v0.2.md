@@ -435,3 +435,14 @@ POST
     "payresult": "Success"
 }
 ```
+## /putcomment
+POST
+```json
+{
+    "userid":"41539402",
+  	"token":"5b8ca602e47bc068371f505f92eb23f9",
+  	"houseid":"2561561080",
+  	"comment": "你们写代码像cxk"
+}
+```
+Put Comment Success

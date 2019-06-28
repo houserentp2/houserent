@@ -275,3 +275,31 @@ func getMyPuts(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, resultJ)
 }
+type CommentStruct struct{
+	UserID string `json:"userid"`
+	Token  string `json:"token"`
+	HouseID string `json:"houseid"`
+	Comment string `json:"comment"`
+}
+func putcomment(c echo.Context)error{
+	requestbody:=new(CommentStruct)
+	err:=c.Bind(requestbody)
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusOK, "Wrong Format")
+	}
+	if !checkToken(requestbody.UserID,requestbody.Token){
+		return c.String(http.StatusOK, "Invalid Token")
+	}
+	filter:=bson.D{{"houseid",requestbody.HouseID}}
+	doc:=new(HouseDetailD)
+	err=Collection[HOUSEINFO].FindOne(context.TODO(),filter).Decode(doc)
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusOK, "ERR 01")
+	}
+	doc.Others.Comments=append(doc.Others.Comments,requestbody.Comment)
+	inres:=Collection[HOUSEINFO].FindOneAndReplace(context.TODO(),filter,doc)
+	fmt.Println(inres)
+	return  c.String(http.StatusOK, "Put Comment Success")
+}

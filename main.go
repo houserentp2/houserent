@@ -46,6 +46,7 @@ func main() {
 	e.POST("/getuserinfo", getUserinfo)
 	e.POST("/logout", logout)
 	e.POST("/puthouse", puthouse)
+	e.POST("/putcomment",putcomment)
 	e.POST("/updatehouse",updatehouse)
 	e.POST("/gethouse", gethouse)
 	e.POST("/gethouselist", gethouselist)
