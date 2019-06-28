@@ -26,6 +26,9 @@ const ExpireHouse = "expirehouse"
 const Wallet = "wallet"
 const Discount = "discount"
 const Order = "order"
+const HouseCheckPool="housecheckpool"
+const Checker="checker"
+const Houseids="houseids"
 const Test = "test"
 
 const (
@@ -37,6 +40,9 @@ const (
 	WALLET        = 5
 	DISCOUNT      = 6
 	ORDER         = 7
+	HOUSECHECKPOOL=8
+	CHECKER=9
+	HOUSEIDS=10
 	TEST          = 11
 )
 
@@ -64,7 +70,9 @@ func initDB() {
 	Collection[WALLET] = client.Database(ProjectName).Collection(Wallet)
 	Collection[DISCOUNT] = client.Database(ProjectName).Collection(Discount)
 	Collection[ORDER] = client.Database(ProjectName).Collection(Order)
-
+	Collection[HOUSECHECKPOOL]=client.Database(ProjectName).Collection(HouseCheckPool)
+	Collection[CHECKER]=client.Database(ProjectName).Collection(Checker)
+	Collection[HOUSEIDS]=client.Database(ProjectName).Collection(Houseids)
 	Collection[TEST] = client.Database(ProjectName).Collection(Test)
 
 }

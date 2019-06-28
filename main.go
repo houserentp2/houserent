@@ -55,5 +55,9 @@ func main() {
 	e.POST("/getmyrented", getmyrented)
 	e.POST("/getdiscountlist", getDiscountList)
 	e.POST("/pay", pay)
+	e.POST("/joinchecker",joinchecher)
+	e.POST("/getcheckerinfo",getcheckerinfo)
+	e.POST("/gettocheckhouse",gettocheckhouse)
+	e.POST("/putcheckresult",putcheckresult)
 	e.Logger.Fatal(e.Start(":1323"))
 }

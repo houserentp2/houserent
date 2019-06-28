@@ -281,6 +281,10 @@ func pay(c echo.Context) error {
 	if err != nil {
 		fmt.Println(err)
 	}
+	_,err=Collection[EXPIREHOUSE].InsertOne(context.TODO(),houseD)
+	if err != nil {
+		fmt.Println(err)
+	}
 	result := PaySucc{requestbodyJ.OrderID, "Success"}
 	return c.JSON(http.StatusOK, result)
 }

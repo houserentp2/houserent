@@ -102,12 +102,14 @@ type HouseDetailJ struct {
 	Pictures    []string         `json:"pictures"`
 	Others      OtherHouseDetail `json:"others"`
 }
-
+type HouseID struct{
+	Houseid string `json:"houseid"`
+}
 func genHouseID() string {
 	str := strconv.Itoa(int(time.Now().Unix()%8999999999) + 1000000000)
 	filter := bson.D{{"houseid", str}}
 	var result HouseDetailD
-	err = Collection[HOUSEINFO].FindOne(context.TODO(), filter).Decode(&result)
+	err = Collection[HOUSEIDS].FindOne(context.TODO(), filter).Decode(&result)
 	if err != nil {
 		fmt.Println(err)
 		if err != mongo.ErrNoDocuments {
@@ -139,13 +141,14 @@ func puthouse(c echo.Context) error {
 	requestbody.Token = ""
 	requestbody.Time = time.Now()
 	requestbodyD := conv_HouseDetailJ_D(*requestbody)
-	insertRes, err := Collection[HOUSEINFO].InsertOne(context.TODO(), requestbodyD)
+	insertRes, err := Collection[HOUSECHECKPOOL].InsertOne(context.TODO(), requestbodyD)
 	if err != nil {
 		fmt.Println(err)
 		return c.String(http.StatusOK, "Failed to Create")
 	}
 	fmt.Println(insertRes.InsertedID)
-	insertRes, err = Collection[HOUSELISTINFO].InsertOne(context.TODO(), genMiniDetailD(requestbodyD))
+	houseid:=HouseID{requestbody.HouseID}
+	insertRes, err = Collection[HOUSEIDS].InsertOne(context.TODO(), houseid)
 	if err != nil {
 		fmt.Println(err)
 		return c.String(http.StatusOK, "Failed to Create2")
@@ -167,19 +170,55 @@ func updatehouse(c echo.Context) error {
 		return c.String(http.StatusOK, "Lack HouseID")
 	}
 	filter := bson.D{{"houseid", requestbody.HouseID}}
+	idinfo:=new(HouseID)
+	err=Collection[HOUSEIDS].FindOne(context.TODO(),filter).Decode(idinfo)
+	if err != nil {
+		if err==mongo.ErrNoDocuments{
+			return c.String(http.StatusOK, "Invalid HouseID")
+		}
+		fmt.Println(err)
+		return c.String(http.StatusOK, "ERR 00")
+	}
 	data := new(HouseDetailD)
+	storeflag:=0
 	err = Collection[HOUSEINFO].FindOne(context.TODO(), filter).Decode(data)
 	if err != nil {
-		fmt.Println(err)
-		return c.String(http.StatusOK, "ERR 01")
+		if err!=mongo.ErrNoDocuments{
+			fmt.Println(err)
+			return c.String(http.StatusOK, "ERR 01")
+		}else {
+			err = Collection[HOUSECHECKPOOL].FindOne(context.TODO(), filter).Decode(data)
+			if err != nil {
+				if err!=mongo.ErrNoDocuments{
+					fmt.Println(err)
+					return c.String(http.StatusOK, "ERR 02")
+				}else {
+					return c.String(http.StatusOK, "ERR 03")
+				}
+			}else {
+				_,err=Collection[HOUSECHECKPOOL].DeleteOne(context.TODO(),filter)
+				if err != nil {
+					fmt.Println(err)
+					return c.String(http.StatusOK, "ERR 04")
+				}
+			}
+		}
+	}else{
+		_,err=Collection[HOUSEINFO].DeleteOne(context.TODO(),filter)
+		if err != nil {
+			fmt.Println(err)
+			return c.String(http.StatusOK, "ERR 05")
+		}
+		_,err=Collection[HOUSELISTINFO].DeleteOne(context.TODO(),filter)
+		if err != nil {
+			fmt.Println(err)
+			return c.String(http.StatusOK, "ERR 06")
+		}
 	}
 	requestbody.Token = ""
 	requestbody.Time = time.Now()
 	requestdata := conv_HouseDetailJ_D(*requestbody)
-	listreq := genMiniDetailD(requestdata)
-	dbres := Collection[HOUSEINFO].FindOneAndReplace(context.TODO(), filter, requestdata)
-	fmt.Println(dbres)
-	dbres = Collection[HOUSELISTINFO].FindOneAndReplace(context.TODO(), filter, listreq)
+	dbres := Collection[HOUSECHECKPOOL].FindOneAndReplace(context.TODO(), filter, requestdata)
 	fmt.Println(dbres)
 	return c.String(http.StatusOK, requestbody.HouseID)
 }
@@ -252,27 +291,53 @@ func getMyPuts(c echo.Context) error {
 		return c.String(http.StatusOK, "Invalid Token")
 	}
 	filter := bson.D{{"userid", requestbody.UserID}}
-	curser, err := Collection[HOUSELISTINFO].Find(context.TODO(), filter, options.Find().SetSort(bson.M{"time": -1}))
+	var resultD []HouseListItemD
+	itemx:=new(HouseDetailD)
+	curser,err:=Collection[HOUSECHECKPOOL].Find(context.TODO(),filter, options.Find().SetSort(bson.M{"time": -1}))
 	if err != nil {
 		fmt.Println(err)
-		return c.String(http.StatusOK, "Failed")
+		return c.String(http.StatusOK, "Failed 0")
 	}
-	defer curser.Close(context.Background())
-	var resultD []HouseListItemD
+	for curser.Next(context.Background()) {
+		err = curser.Decode(itemx)
+		if err != nil {
+			fmt.Println(err)
+			return c.String(http.StatusOK, "Failed 1")
+		}
+		resultD = append(resultD, genMiniDetailD(*itemx))
+	}
+	curser, err = Collection[HOUSELISTINFO].Find(context.TODO(), filter, options.Find().SetSort(bson.M{"time": -1}))
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusOK, "Failed 2")
+	}
 	item := new(HouseListItemD)
 	for curser.Next(context.Background()) {
 		err = curser.Decode(item)
 		if err != nil {
 			fmt.Println(err)
+			return c.String(http.StatusOK, "Failed 3")
 		}
 		resultD = append(resultD, *item)
 	}
-	fmt.Println(resultD[0].Picture)
-	fmt.Println(resultD[1].Picture)
+	curser, err = Collection[EXPIREHOUSE].Find(context.TODO(), filter, options.Find().SetSort(bson.M{"time": -1}))
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusOK, "Failed 4")
+	}
+	for curser.Next(context.Background()) {
+		err = curser.Decode(item)
+		if err != nil {
+			fmt.Println(err)
+			return c.String(http.StatusOK, "Failed 5")
+		}
+		resultD = append(resultD, *item)
+	}
 	var resultJ []HouseListItemJ
 	for _, item := range resultD {
 		resultJ = append(resultJ, conv_HouseListItemD_J(item))
 	}
+	defer curser.Close(context.Background())
 	return c.JSON(http.StatusOK, resultJ)
 }
 type CommentStruct struct{
@@ -302,4 +367,141 @@ func putcomment(c echo.Context)error{
 	inres:=Collection[HOUSEINFO].FindOneAndReplace(context.TODO(),filter,doc)
 	fmt.Println(inres)
 	return  c.String(http.StatusOK, "Put Comment Success")
+}
+func checkinvite(c CheckerStruct)bool{
+	return true
+}
+type CheckerStruct struct {
+	UserID string `json:"userid"`
+	Token  string `json:"token"`
+	Invite string `json:"invite"`
+}
+func joinchecher(c echo.Context)error{
+	requestbody:=new(CheckerStruct)
+	err:=c.Bind(requestbody)
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusOK, "Wrong Format")
+	}
+	if !checkToken(requestbody.UserID,requestbody.Token) {
+		return c.String(http.StatusOK, "Invalid Token")
+	}
+	filter:=bson.D{{"userid",requestbody.UserID}}
+	doc:=new(CheckerStruct)
+	err=Collection[CHECKER].FindOne(context.TODO(),filter).Decode(doc)
+	if err != nil {
+		if err!=mongo.ErrNoDocuments {
+			fmt.Println(err)
+			return c.String(http.StatusOK, "ERR 01")
+		}
+	}
+	if doc.UserID!=""{
+		return c.String(http.StatusOK, "Permission Existed")
+	}
+	if checkinvite(*requestbody){
+		_,err=Collection[CHECKER].InsertOne(context.TODO(),requestbody)
+		if err != nil {
+			fmt.Println(err)
+		}
+		return c.String(http.StatusOK, "Permission Get")
+	}else {
+		return c.String(http.StatusOK, "Invalid Invite")
+	}
+}
+func getcheckerinfo(c echo.Context)error{
+	requestbody:=new(LoginSucc)
+	err:=c.Bind(requestbody)
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusOK, "Wrong Format")
+	}
+	if !checkToken(requestbody.UserID,requestbody.Token) {
+		return c.String(http.StatusOK, "Invalid Token")
+	}
+	filter:=bson.D{{"userid",requestbody.UserID}}
+	doc:=new(CheckerStruct)
+	err=Collection[CHECKER].FindOne(context.TODO(),filter).Decode(doc)
+	if err != nil {
+		if err!=mongo.ErrNoDocuments {
+			fmt.Println(err)
+			return c.String(http.StatusOK, "ERR 01")
+		}
+		return c.String(http.StatusOK, "NOPERM")
+	}
+	if doc.UserID==requestbody.UserID{
+		return c.String(http.StatusOK, "Permission Existed")
+	}
+	return c.String(http.StatusOK, "ERR 02")
+}
+func gettocheckhouse(c echo.Context)error{
+	requestbody:=new(LoginSucc)
+	err:=c.Bind(requestbody)
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusOK, "Wrong Format")
+	}
+	if !checkToken(requestbody.UserID,requestbody.Token) {
+		return c.String(http.StatusOK, "Invalid Token")
+	}
+	filter:=bson.D{{"userid",requestbody.UserID}}
+	doc:=new(CheckerStruct)
+	err=Collection[CHECKER].FindOne(context.TODO(),filter).Decode(doc)
+	if err != nil {
+		if err!=mongo.ErrNoDocuments {
+			fmt.Println(err)
+			return c.String(http.StatusOK, "ERR 01")
+		}
+		return c.String(http.StatusOK, "NOPERM")
+	}
+	house:=new(HouseDetailD)
+	err=Collection[HOUSECHECKPOOL].FindOne(context.TODO(),bson.M{"price":bson.M{"$gte":"0"}}).Decode(house)
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusOK, "ERR 01")
+	}
+	return c.JSON(http.StatusOK,conv_HouseDetailD_J(*house))
+}
+type Checkresult struct {
+	UserID string `json:"userid"`
+	Token  string `json:"token"`
+	HouseID string `json:"houseid"`
+	Result int `json:"result"`
+}
+func putcheckresult(c echo.Context)error{
+	requestbody:=new(Checkresult)
+	err:=c.Bind(requestbody)
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusOK, "Wrong Format")
+	}
+	if !checkToken(requestbody.UserID,requestbody.Token) {
+		return c.String(http.StatusOK, "Invalid Token")
+	}
+	filter:=bson.D{{"houseid",requestbody.HouseID}}
+	if requestbody.Result==1{
+		house:=new(HouseDetailD)
+		err=Collection[HOUSECHECKPOOL].FindOne(context.TODO(),filter).Decode(house)
+		if err != nil {
+			fmt.Println(err)
+			return c.String(http.StatusOK, "ERR 01")
+		}
+		_,err=Collection[HOUSEINFO].InsertOne(context.TODO(),house)
+		if err != nil {
+			fmt.Println(err)
+			return c.String(http.StatusOK, "ERR 02")
+		}
+		_,err=Collection[HOUSELISTINFO].InsertOne(context.TODO(),genMiniDetailD(*house))
+		if err != nil {
+			fmt.Println(err)
+			return c.String(http.StatusOK, "ERR 03")
+		}
+		return c.String(http.StatusOK, "Success")
+	}else if requestbody.Result==0{
+		_,err=Collection[HOUSECHECKPOOL].DeleteOne(context.TODO(),filter)
+		if err != nil {
+			fmt.Println(err)
+			return c.String(http.StatusOK, "ERR 04")
+		}
+	}
+	return c.String(http.StatusOK, "ERR 05")
 }
