@@ -285,6 +285,8 @@ func pay(c echo.Context) error {
 	if err != nil {
 		fmt.Println(err)
 	}
+	searcher.RemoveDoc(requestbodyD.HouseID)
+	searcher.Flush()
 	result := PaySucc{requestbodyJ.OrderID, "Success"}
 	return c.JSON(http.StatusOK, result)
 }

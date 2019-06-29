@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/gob"
 	"flag"
 	"github.com/go-ego/riot"
 	"github.com/go-ego/riot/types"
@@ -19,20 +20,24 @@ var(
 
 	//weiboData=flag.String()
 	dictFile=flag.String("dict_file",
-		"X:/Users/huang/go/pkg/mod/github.com/go-ego/riot@v0.0.0-20190307162011-3d971d90bc83/data/dict/dictionary.txt", "词典文件")
+		"../../pkg/mod/github.com/go-ego/riot@v0.0.0-20190307162011-3d971d90bc83/data/dict/dictionary.txt", "词典文件")
 	stopTokenFile = flag.String("stop_token_file",
-		"X:/Users/huang/go/pkg/mod/github.com/go-ego/riot@v0.0.0-20190307162011-3d971d90bc83/data/dict/stop_tokens.txt", "停用词文件")
+		"../../pkg/mod/github.com/go-ego/riot@v0.0.0-20190307162011-3d971d90bc83/data/dict/stop_tokens.txt", "停用词文件")
 	staticFolder = flag.String("static_folder", "static", "静态文件目录")
 
 )
 
 func main() {
 	initDB()
-
+	gob.Register(HouseScoringCriteria{})
 	searcher.Init(types.EngineOpts{
 		Using:1,
 		GseDict:*dictFile,
-		StopTokenFile:"X:/Users/huang/go/pkg/mod/github.com/go-ego/riot@v0.0.0-20190307162011-3d971d90bc83/data/dict/stop_tokens.txt",
+		StopTokenFile:*stopTokenFile,
+		UseStore:true,
+		StoreFolder:"../storage",
+		//StoreShards: 8,
+		//StoreEngine:"bg",
 	})
 	defer searcher.Close()
 

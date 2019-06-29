@@ -481,6 +481,9 @@ func gettocheckhouse(c echo.Context)error{
 	house:=new(HouseDetailD)
 	err=Collection[HOUSECHECKPOOL].FindOne(context.TODO(),bson.M{"price":bson.M{"$gte":"0"}}).Decode(house)
 	if err != nil {
+		if err==mongo.ErrNoDocuments{
+			return c.String(http.StatusOK,"CheckPool Empty")
+		}
 		fmt.Println(err)
 		return c.String(http.StatusOK, "ERR 01")
 	}
