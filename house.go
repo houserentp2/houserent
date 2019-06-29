@@ -48,16 +48,16 @@ type Shiting struct {
 	Ting int32 `json:"ting"`
 }
 type OtherHouseDetail struct {
-	Water    string   `json:"water"`
-	Power    string   `json:"power"`
-	Net      string   `json:"net"`
-	Hot      string   `json:"hot"`
-	Aircon   string   `json:"aircon"`
-	Bus      string   `json:"bus"`
+	Water    int   `json:"water"`
+	Power    int   `json:"power"`
+	Net      int   `json:"net"`
+	Hot      int   `json:"hot"`
+	Aircon   int   `json:"aircon"`
+	Bus      int   `json:"bus"`
 	Short    int      `json:"short"`
 	Long     int      `json:"long"`
 	Capacity int32    `json:"capacity"`
-	Comments []string `json:"comments"`
+	Comments []CommentStruct `json:"comments"`
 	Status   Status `json:"status"`
 }
 type Status struct {
@@ -180,7 +180,7 @@ func updatehouse(c echo.Context) error {
 		return c.String(http.StatusOK, "ERR 00")
 	}
 	data := new(HouseDetailD)
-	storeflag:=0
+	//storeflag:=0
 	err = Collection[HOUSEINFO].FindOne(context.TODO(), filter).Decode(data)
 	if err != nil {
 		if err!=mongo.ErrNoDocuments{
@@ -356,6 +356,7 @@ func putcomment(c echo.Context)error{
 	if !checkToken(requestbody.UserID,requestbody.Token){
 		return c.String(http.StatusOK, "Invalid Token")
 	}
+	requestbody.Token=""
 	filter:=bson.D{{"houseid",requestbody.HouseID}}
 	doc:=new(HouseDetailD)
 	err=Collection[HOUSEINFO].FindOne(context.TODO(),filter).Decode(doc)
@@ -363,7 +364,7 @@ func putcomment(c echo.Context)error{
 		fmt.Println(err)
 		return c.String(http.StatusOK, "ERR 01")
 	}
-	doc.Others.Comments=append(doc.Others.Comments,requestbody.Comment)
+	doc.Others.Comments=append(doc.Others.Comments,*requestbody)
 	inres:=Collection[HOUSEINFO].FindOneAndReplace(context.TODO(),filter,doc)
 	fmt.Println(inres)
 	return  c.String(http.StatusOK, "Put Comment Success")
