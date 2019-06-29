@@ -85,6 +85,7 @@ type HouseDetailD struct {
 	Location    Resident             `json:"location"`
 	Pictures    []string             `json:"pictures"`
 	Others      OtherHouseDetail     `json:"others"`
+	ClickCount  int64  				 `json:"clickcount"`
 }
 type HouseDetailJ struct {
 	UserID      string           `json:"userid"`
@@ -238,6 +239,11 @@ func gethouse(c echo.Context) error {
 	if err != nil || resultD.HouseID == "" {
 		return c.String(http.StatusOK, "Cannot Find")
 	}
+	resultD.ClickCount=resultD.ClickCount+1
+	_,err=Collection[HOUSEINFO].ReplaceOne(context.TODO(),filter,resultD)
+	if err != nil {
+		fmt.Println(err)
+	}
 	resultJ := conv_HouseDetailD_J(*resultD)
 	return c.JSON(http.StatusOK, resultJ)
 }
@@ -256,6 +262,7 @@ func gethouselist(c echo.Context) error {
 	nowtime := conv_tT_priDT(time.Now().AddDate(0, -1, 0))
 	//fmt.Println(nowtime)
 	//money,_:=primitive.ParseDecimal128("20")
+	fmt.Println(queryParam)
 	if queryParam == "" {
 		curser, err := Collection[HOUSELISTINFO].Find(context.TODO(), bson.M{"time": bson.M{"$gte": nowtime}}, options.Find().SetLimit(10), options.Find().SetSort(bson.M{"price": -1}))
 		if err != nil {
@@ -277,8 +284,25 @@ func gethouselist(c echo.Context) error {
 			resultJ = append(resultJ, conv_HouseListItemD_J(item))
 		}
 		return c.JSON(http.StatusOK, resultJ)
+	}else {
+		idlist:=searchfor(queryParam)
+		var resultD []HouseListItemD
+		for _,id:=range idlist{
+			filter:=bson.D{{"houseid",id}}
+			var doc HouseListItemD
+			err=Collection[HOUSELISTINFO].FindOne(context.TODO(),filter).Decode(&doc)
+			if err != nil {
+				fmt.Println(err)
+			}
+			resultD=append(resultD,doc)
+		}
+		var resultJ []HouseListItemJ
+		for _, item := range resultD {
+			resultJ = append(resultJ, conv_HouseListItemD_J(item))
+		}
+		return c.JSON(http.StatusOK, resultJ)
+
 	}
-	return c.String(http.StatusOK, "aaa")
 }
 func getMyPuts(c echo.Context) error {
 	requestbody := new(GetHLStruct)
@@ -496,6 +520,7 @@ func putcheckresult(c echo.Context)error{
 			fmt.Println(err)
 			return c.String(http.StatusOK, "ERR 03")
 		}
+		indexHouseinfo(*house)
 		return c.String(http.StatusOK, "Success")
 	}else if requestbody.Result==0{
 		_,err=Collection[HOUSECHECKPOOL].DeleteOne(context.TODO(),filter)

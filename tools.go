@@ -43,6 +43,7 @@ func conv_HouseDetailJ_D(hj HouseDetailJ) HouseDetailD {
 		hj.Location,
 		hj.Pictures,
 		hj.Others,
+		0,
 	}
 }
 func conv_HouseDetailD_J(hd HouseDetailD) HouseDetailJ {
