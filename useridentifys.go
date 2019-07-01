@@ -80,7 +80,6 @@ func register(c echo.Context) error { // 手机号注册
 		fmt.Println(err)
 		return c.String(http.StatusOK, "Wrong Format")
 	}
-	fmt.Println(*user)
 	// 检查手机号是否已注册
 	filter := bson.D{{"phonenum", user.PhoneNum}}
 	var result UserIdentifyStructD
@@ -88,7 +87,7 @@ func register(c echo.Context) error { // 手机号注册
 	if err != nil { // 查询数据库问题
 		fmt.Println(err)
 		if err != mongo.ErrNoDocuments {
-			return c.String(http.StatusOK, "Reg Failed 0")
+			return c.String(http.StatusOK, "ERR Register 0")
 		}
 	}
 	if result.PhoneNum != "" { // 手机号已注册
@@ -98,7 +97,7 @@ func register(c echo.Context) error { // 手机号注册
 	//生成UserID
 	result.UserID = genUserID()
 	if result.UserID == "" { // 生成ID失败
-		return c.String(http.StatusOK, "Reg Failed 1")
+		return c.String(http.StatusOK, "ERR Register 1")
 	}
 	result.PhoneNum = user.PhoneNum
 	result.Password = user.Password
@@ -106,12 +105,11 @@ func register(c echo.Context) error { // 手机号注册
 	result.Time = conv_tT_priDT(time.Now())
 	var regres = RegSucc{result.UserID, result.Token} // 返回体
 	// 注册结果插入数据库
-	insert, err := Collection[USERIDENTIFY].InsertOne(context.TODO(), result)
+	_, err = Collection[USERIDENTIFY].InsertOne(context.TODO(), result)
 	if err != nil {
 		fmt.Println(err)
-		return c.String(http.StatusOK, "Reg Failed 2")
+		return c.String(http.StatusOK, "ERR Register 2")
 	}
-	fmt.Println(insert.InsertedID)
 	// 注册时自动生成空的UserDetailInfo
 	userinfo := new(UserDetInfo)
 	userinfo.UserID = result.UserID
@@ -123,7 +121,7 @@ func register(c echo.Context) error { // 手机号注册
 			fmt.Println(err)
 		}
 		fmt.Println(del)
-		return c.String(http.StatusOK, "Reg Failed 3")
+		return c.String(http.StatusOK, "ERR Register 3")
 	}
 	fmt.Println(insertuserinfo)
 
@@ -324,4 +322,35 @@ func resetPassword(c echo.Context) error {
 	}
 	fmt.Println(Updateres)
 	return c.String(http.StatusOK, "Update Password Success")
+}
+type GetMiniuserinfoStruct struct {
+	UserID string `json:"userid"`
+	Token string `json:"token"`
+	ReqID string `json:"reqid"`
+}
+type Miniuserinfo struct{
+	UserID string `json:"userid"`
+	Nickname string `json:"nickname"`
+	Icon string `json:"icon"`
+}
+func getminiuserinfo(c echo.Context)error{
+	requestbody:=new(GetMiniuserinfoStruct)
+	err:=c.Bind(requestbody)
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusOK, "Wrong Format")
+	}
+	//check token
+	if !checkToken(requestbody.UserID, requestbody.Token) {
+		return c.String(http.StatusOK, "Invalid Token")
+	}
+	filter:=bson.D{{"userid",requestbody.ReqID}}
+	var result UserDetInfo
+	err=Collection[USERINFO].FindOne(context.TODO(),filter).Decode(&result)
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusOK,err.Error())
+	}
+	info:=Miniuserinfo{result.UserID,result.Nickname,result.Icon}
+	return c.JSON(http.StatusOK,info)
 }

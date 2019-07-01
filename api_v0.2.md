@@ -21,6 +21,7 @@ response:
     "token": "9eafe01763c98c3cb0a434ba0e3c66f4"
 }
 ```
+
 ## /login  
 method:POST  
 example:  

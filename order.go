@@ -21,6 +21,7 @@ type PayOrderJ struct {
 	OrderID    string      `json:"orderid"`
 	DiscountID string      `json:"discountid"`
 	Pay        PaychannelJ `json:"pay"`
+	Paypwd     string `json:"paypwd"`
 	Time       time.Time   `json:"time"`
 	Start      time.Time   `json:"start"`
 	Stop       time.Time   `json:"stop"`
@@ -34,6 +35,7 @@ type PayOrderD struct {
 	OrderID    string             `json:"orderid"`
 	DiscountID string             `json:"discountid"`
 	Pay        PaychannelD        `json:"pay"`
+	Paypwd     string `json:"paypwd"`
 	Time       primitive.DateTime `json:"time"`
 	Start      primitive.DateTime `json:"start"`
 	Stop       primitive.DateTime `json:"stop"`
@@ -75,6 +77,7 @@ type WalletStructJ struct {
 	UserID       string            `json:"userid"`
 	Score        int32             `json:"score"`
 	Balance      decimal.Decimal   `json:"balance"`
+	Paypwd       string`json:"paypwd"`
 	DiscountList []DiscountdetailJ `json:"discountlist"`
 	PayOrderList []PayOrderJ       `json:"payorderlist"`
 }
@@ -82,6 +85,7 @@ type WalletStructD struct {
 	UserID       string               `json:"userid"`
 	Score        int32                `json:"score"`
 	Balance      primitive.Decimal128 `json:"balance"`
+	Paypwd       string`json:"paypwd"`
 	DiscountList []DiscountdetailD    `json:"discountlist"`
 	PayOrderList []PayOrderD          `json:"payorderlist"`
 }
@@ -306,6 +310,9 @@ func getmyrented(c echo.Context) error {
 	if err != nil {
 		fmt.Println(err)
 		return c.String(http.StatusOK, "err 01")
+	}
+	if len(walletD.PayOrderList)==0{
+		return c.String(http.StatusOK, "No Record")
 	}
 	return c.JSON(http.StatusOK, conv_list_POD_J(walletD.PayOrderList))
 }

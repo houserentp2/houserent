@@ -35,9 +35,9 @@ func main() {
 		GseDict:*dictFile,
 		StopTokenFile:*stopTokenFile,
 		UseStore:true,
-		StoreFolder:"../storage",
+		//StoreFolder:"../storage",
 		//StoreShards: 8,
-		//StoreEngine:"bg",
+		StoreEngine:"bg",
 	})
 	defer searcher.Close()
 
@@ -58,7 +58,6 @@ func main() {
 	e.POST("/updatehouse",updatehouse)
 	e.POST("/gethouse", gethouse)
 	e.POST("/gethouselist", gethouselist)
-	e.POST("/gethouselist/:queryparam", gethouselist)
 	e.POST("/getmyputs", getMyPuts)
 	e.POST("/getmyrented", getmyrented)
 	e.POST("/getdiscountlist", getDiscountList)
@@ -67,5 +66,6 @@ func main() {
 	e.POST("/getcheckerinfo",getcheckerinfo)
 	e.POST("/gettocheckhouse",gettocheckhouse)
 	e.POST("/putcheckresult",putcheckresult)
+	e.POST("/getminiuserinfo",getminiuserinfo)
 	e.Logger.Fatal(e.Start(":1323"))
 }

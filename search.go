@@ -35,7 +35,7 @@ func (criteria HouseScoringCriteria)Score(doc types.IndexedDoc,fields interface{
 	return output
 }
 func indexHouseinfo(d HouseDetailD){
-	description:=d.Title+" "+d.Description+" "+d.Location.Province+d.Location.City+d.Location.Zone+d.Location.Path
+	description:=d.Title+" "+d.Description+" "+d.Location.Province+""+d.Location.City+""+d.Location.Zone+""+d.Location.Path
 	houses[d.HouseID]=SearchFocus{
 		HouseID:d.HouseID,
 		Description:description,

@@ -44,6 +44,7 @@ func conv_HouseDetailJ_D(hj HouseDetailJ) HouseDetailD {
 		hj.Pictures,
 		hj.Others,
 		0,
+		hj.Nickname,
 	}
 }
 func conv_HouseDetailD_J(hd HouseDetailD) HouseDetailJ {
@@ -62,6 +63,7 @@ func conv_HouseDetailD_J(hd HouseDetailD) HouseDetailJ {
 		hd.Location,
 		hd.Pictures,
 		hd.Others,
+		hd.Nickname,
 	}
 }
 func conv_HouseListItemD_J(hld HouseListItemD) HouseListItemJ {
@@ -103,6 +105,7 @@ func conv_POJ_D(j PayOrderJ) PayOrderD {
 		j.OrderID,
 		j.DiscountID,
 		conv_PcJ_D(j.Pay),
+		j.Paypwd,
 		conv_tT_priDT(j.Time),
 		conv_tT_priDT(j.Start),
 		conv_tT_priDT(j.Stop),
@@ -118,6 +121,7 @@ func conv_POD_J(d PayOrderD) PayOrderJ {
 		d.OrderID,
 		d.DiscountID,
 		conv_PcD_J(d.Pay),
+		d.Paypwd,
 		conv_priDT_tT(d.Time),
 		conv_priDT_tT(d.Start),
 		conv_priDT_tT(d.Stop),
@@ -179,6 +183,7 @@ func conv_WSJ_D(j WalletStructJ) WalletStructD {
 		j.UserID,
 		j.Score,
 		conv_dD_priDe(j.Balance),
+		j.Paypwd,
 		conv_list_DcdJ_D(j.DiscountList),
 		conv_list_POJ_D(j.PayOrderList),
 	}
@@ -188,6 +193,7 @@ func conv_WSD_J(d WalletStructD) WalletStructJ {
 		d.UserID,
 		d.Score,
 		conv_priDe_dD(d.Balance),
+		d.Paypwd,
 		conv_list_DcdD_J(d.DiscountList),
 		conv_list_POD_J(d.PayOrderList),
 	}

@@ -86,6 +86,7 @@ type HouseDetailD struct {
 	Pictures    []string             `json:"pictures"`
 	Others      OtherHouseDetail     `json:"others"`
 	ClickCount  int64  				 `json:"clickcount"`
+	Nickname    string`json:"nickname"`
 }
 type HouseDetailJ struct {
 	UserID      string           `json:"userid"`
@@ -102,6 +103,7 @@ type HouseDetailJ struct {
 	Location    Resident         `json:"location"`
 	Pictures    []string         `json:"pictures"`
 	Others      OtherHouseDetail `json:"others"`
+	Nickname    string`json:"nickname"`
 }
 type HouseID struct{
 	Houseid string `json:"houseid"`
@@ -141,7 +143,11 @@ func puthouse(c echo.Context) error {
 	requestbody.HouseID = genHouseID()
 	requestbody.Token = ""
 	requestbody.Time = time.Now()
+	if requestbody.Others.Comments==nil{
+		requestbody.Others.Comments=[]CommentStruct{}
+	}
 	requestbodyD := conv_HouseDetailJ_D(*requestbody)
+	requestbodyD.HostID=requestbodyD.UserID
 	insertRes, err := Collection[HOUSECHECKPOOL].InsertOne(context.TODO(), requestbodyD)
 	if err != nil {
 		fmt.Println(err)
@@ -237,19 +243,40 @@ func gethouse(c echo.Context) error {
 	filter := bson.D{{"houseid", requestbody.HouseID}}
 	err = Collection[HOUSEINFO].FindOne(context.TODO(), filter).Decode(resultD)
 	if err != nil || resultD.HouseID == "" {
-		return c.String(http.StatusOK, "Cannot Find")
+		err=Collection[HOUSECHECKPOOL].FindOne(context.TODO(),filter).Decode(resultD)
+		if err != nil {
+			return c.String(http.StatusOK, "该房屋已被租")
+		}
+		if resultD.UserID!=requestbody.UserID{
+			return c.String(http.StatusOK, "Cannot Find")
+		}
+		resultD.ClickCount=resultD.ClickCount-1
 	}
 	resultD.ClickCount=resultD.ClickCount+1
 	_,err=Collection[HOUSEINFO].ReplaceOne(context.TODO(),filter,resultD)
 	if err != nil {
 		fmt.Println(err)
 	}
+	//TODO
+	filter=bson.D{{"userid",resultD.UserID}}
+	var result UserDetInfo
+	err=Collection[USERINFO].FindOne(context.TODO(),filter).Decode(&result)
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusOK,err.Error())
+	}
 	resultJ := conv_HouseDetailD_J(*resultD)
+	resultJ.Icon=result.Icon
+	resultJ.Nickname=result.Nickname
 	return c.JSON(http.StatusOK, resultJ)
 }
+type GethouselistStruct struct {
+	UserID string `json:"userid"`
+	Token string `json:"token"`
+	QueryParam string `json:"queryparam"`
+}
 func gethouselist(c echo.Context) error {
-	//TODO FUCK
-	requestbody := new(GetHLStruct)
+	requestbody := new(GethouselistStruct)
 	err := c.Bind(requestbody)
 	if err != nil {
 		fmt.Println(err)
@@ -258,7 +285,7 @@ func gethouselist(c echo.Context) error {
 	if !checkToken(requestbody.UserID, requestbody.Token) {
 		return c.String(http.StatusOK, "Invalid Token")
 	}
-	queryParam := c.Param("queryparam")
+	queryParam := requestbody.QueryParam
 	nowtime := conv_tT_priDT(time.Now().AddDate(0, -1, 0))
 	//fmt.Println(nowtime)
 	//money,_:=primitive.ParseDecimal128("20")
@@ -479,7 +506,9 @@ func gettocheckhouse(c echo.Context)error{
 		return c.String(http.StatusOK, "NOPERM")
 	}
 	house:=new(HouseDetailD)
-	err=Collection[HOUSECHECKPOOL].FindOne(context.TODO(),bson.M{"price":bson.M{"$gte":"0"}}).Decode(house)
+	price0d,_:=decimal.NewFromString("0")
+	price0:=conv_dD_priDe(price0d)
+	err=Collection[HOUSECHECKPOOL].FindOne(context.TODO(),bson.M{"price":bson.M{"$gte":price0}}).Decode(house)
 	if err != nil {
 		if err==mongo.ErrNoDocuments{
 			return c.String(http.StatusOK,"CheckPool Empty")
@@ -524,13 +553,18 @@ func putcheckresult(c echo.Context)error{
 			return c.String(http.StatusOK, "ERR 03")
 		}
 		indexHouseinfo(*house)
-		return c.String(http.StatusOK, "Success")
-	}else if requestbody.Result==0{
 		_,err=Collection[HOUSECHECKPOOL].DeleteOne(context.TODO(),filter)
 		if err != nil {
 			fmt.Println(err)
 			return c.String(http.StatusOK, "ERR 04")
 		}
+		return c.String(http.StatusOK, "Success")
+	}else if requestbody.Result==0{
+		_,err=Collection[HOUSECHECKPOOL].DeleteOne(context.TODO(),filter)
+		if err != nil {
+			fmt.Println(err)
+			return c.String(http.StatusOK, "ERR 05")
+		}
 	}
-	return c.String(http.StatusOK, "ERR 05")
+	return c.String(http.StatusOK, "ERR 06")
 }
